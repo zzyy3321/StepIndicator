@@ -15,7 +15,8 @@ class AnnularLayer: CAShapeLayer {
     private let flagLayer = CALayer()
     private let annularPath = UIBezierPath()
     lazy private var centerTextLayer = CATextLayer()
-    
+	lazy private var bottomTextLayer = CATextLayer()
+	
     static private let originalScale = CATransform3DMakeScale(1.0, 1.0, 1.0)
     static private let flagImageName = "CYStepIndicator_ic_done_white"
     static private var flagCGImage:CGImage?
@@ -26,7 +27,13 @@ class AnnularLayer: CAShapeLayer {
     var displayNumber = false
     var step:Int = 0
     var annularDefaultColor: UIColor?
-    
+	
+	var tipText: String = "" {
+		didSet {
+			self.updateStatus()
+		}
+	}
+	
     var isCurrent:Bool = false {
         didSet{
             self.updateStatus()
@@ -95,8 +102,7 @@ class AnnularLayer: CAShapeLayer {
                 }
                 
                 self.drawText()
-            }
-            else{
+            } else {
                 self.centerTextLayer.removeFromSuperlayer()
                 self.strokeColor = self.annularDefaultColor?.cgColor
                 
@@ -107,6 +113,13 @@ class AnnularLayer: CAShapeLayer {
                     self.centerCircleLayer.removeFromSuperlayer()
                 }
             }
+			
+			if !tipText.isEmpty {
+				self.drawTipText()
+			} else {
+				self.bottomTextLayer.removeFromSuperlayer()
+			}
+
         }
     }
     
@@ -135,17 +148,19 @@ class AnnularLayer: CAShapeLayer {
         self.addSublayer(self.centerCircleLayer)
         
         self.centerTextLayer.removeFromSuperlayer()
-        
+		
+		self.bottomTextLayer.removeFromSuperlayer()
+		
         self.animateCenter()
         self.strokeColor = self.annularDefaultColor?.cgColor
     }
     
     private func drawText() {
         let sideLength = fmin(self.frame.width, self.frame.height)
-        
-        self.centerTextLayer.string = "\(self.step)"
         self.centerTextLayer.frame = self.bounds
         self.centerTextLayer.position = CGPoint(x: self.bounds.midX, y: self.bounds.midY * 1.2)
+		
+		self.centerTextLayer.string = "\(self.step)"
         self.centerTextLayer.contentsScale = UIScreen.main.scale
         self.centerTextLayer.foregroundColor = self.strokeColor
         self.centerTextLayer.alignmentMode = kCAAlignmentCenter
@@ -155,6 +170,24 @@ class AnnularLayer: CAShapeLayer {
         
         self.addSublayer(self.centerTextLayer)
     }
+	
+	private func drawTipText() {
+		let sideLength = fmin(self.frame.width, self.frame.height)
+//		self.bottomTextLayer.frame = self.bounds
+		self.bottomTextLayer.position = CGPoint(x: self.bounds.midX, y: self.bounds.maxY + self.bounds.height)
+		
+		self.bottomTextLayer.string = tipText
+		bottomTextLayer.bounds.size = bottomTextLayer.preferredFrameSize()
+		self.bottomTextLayer.contentsScale = UIScreen.main.scale
+		self.bottomTextLayer.foregroundColor = self.strokeColor
+		self.bottomTextLayer.alignmentMode = kCAAlignmentCenter
+		let fontSize = sideLength * 0.65
+		self.bottomTextLayer.font = UIFont.boldSystemFont(ofSize: fontSize) as CFTypeRef
+		self.bottomTextLayer.fontSize = fontSize
+		
+		self.addSublayer(self.bottomTextLayer)
+	}
+	
     
     private func animateCenter() {
         self.centerCircleLayer.transform = CATransform3DMakeScale(0.8, 0.8, 1.0)

@@ -41,6 +41,8 @@ class ViewController: UIViewController,UIScrollViewDelegate {
             isScrollViewInitialized = true
             self.initScrollView()
         }
+		
+		stepIndicatorView.tipStringArray = ["第一步","第二步","第三步","第四步","第五步"]
     }
     
     override func didReceiveMemoryWarning() {
